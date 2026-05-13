@@ -1,44 +1,45 @@
 package com.example.demo.service;
 
+import com.example.demo.exception.UserNotFoundException;
 import com.example.demo.model.User;
+import com.example.demo.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class UserService {
 
-    private List<User> users = new ArrayList<>();
-    private Long idCounter = 1L;
+    private final UserRepository repository;
+
+    public UserService(UserRepository repository) {
+        this.repository = repository;
+    }
 
     public List<User> getAll() {
-        return users;
+        return repository.findAll();
     }
 
     public User getById(Long id) {
-        return users.stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        return repository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
     }
 
     public User create(User user) {
-        user.setId(idCounter++);
-        users.add(user);
-        return user;
+        return repository.save(user);
     }
 
-    public User update(Long id, User newUser) {
+    public User update(Long id, User updatedUser) {
         User user = getById(id);
-        if (user != null) {
-            user.setName(newUser.getName());
-            user.setEmail(newUser.getEmail());
-        }
-        return user;
+
+        user.setName(updatedUser.getName());
+        user.setEmail(updatedUser.getEmail());
+
+        return repository.save(user);
     }
 
-    public boolean delete(Long id) {
-        return users.removeIf(u -> u.getId().equals(id));
+    public void delete(Long id) {
+        User user = getById(id);
+        repository.delete(user);
     }
 }

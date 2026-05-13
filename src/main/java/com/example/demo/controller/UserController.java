@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.User;
 import com.example.demo.service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,30 +11,35 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserService service = new UserService();
+    private final UserService service;
+
+    public UserController(UserService service) {
+        this.service = service;
+    }
 
     @GetMapping
-    public List<User> getAll() {
-        return service.getAll();
+    public ResponseEntity<List<User>> getAll() {
+        return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
-    public User getById(@PathVariable Long id) {
-        return service.getById(id);
+    public ResponseEntity<User> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getById(id));
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        return service.create(user);
+    public ResponseEntity<User> create(@RequestBody User user) {
+        return ResponseEntity.status(201).body(service.create(user));
     }
 
     @PutMapping("/{id}")
-    public User update(@PathVariable Long id, @RequestBody User user) {
-        return service.update(id, user);
+    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User user) {
+        return ResponseEntity.ok(service.update(id, user));
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
-        return service.delete(id) ? "Deleted" : "Not found";
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
